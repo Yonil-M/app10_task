@@ -21,7 +21,28 @@ class _HomePageState extends State<HomePage> {
     context: context, 
     builder: (BuildContext context) {
       return MyFormWidget();
+    }).then((value){
+      print("El formulario fue cerrado");
+      setState(() {
+        
+      });
     });
+    
+  }
+
+  deleteTask(int taskId){
+    DBAdmin.db.deleteTask(taskId).then((value){
+      if(value>0){
+       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                  content: 
+                  Row(children:const [
+                    Icon(Icons.check_circle,color: Colors.white,),
+                    SizedBox(height: 10.0,),
+                    Text("Tarea eliminada")
+                  ],))); 
+      }
+    });
+
     
   }
 
@@ -42,10 +63,28 @@ class _HomePageState extends State<HomePage> {
         return ListView.builder(
           itemCount: myTask.length,
           itemBuilder:(BuildContext context,int index) {
-            return ListTile(
-              title: Text(myTask[index].title),
-              subtitle: Text(myTask[index].description),
-              trailing: Text(myTask[index].id.toString()),
+            return Dismissible(
+              key: UniqueKey(),
+              confirmDismiss: (DismissDirection direction)async {
+                print(direction);
+                return true;
+                
+              },
+              direction: DismissDirection.horizontal,
+              background: Container(color: Colors.redAccent),
+              onDismissed: (DismissDirection direction) {
+                deleteTask(myTask[index].id!);
+              },
+              child: ListTile(
+                title: Text(myTask[index].title),
+                subtitle: Text(myTask[index].description),
+                trailing: IconButton(
+                  onPressed: () {
+                    showDialogForm();
+                  },
+                  icon: Icon(Icons.edit),
+                ),
+              ),
             );
             
           },);
